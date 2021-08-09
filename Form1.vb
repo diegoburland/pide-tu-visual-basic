@@ -13,7 +13,6 @@ Public Class Form1
 
     Sub Link()
         Try
-
             conn.ConnectionString = "Data Source=MPC-JMV2\SQLEXPRESS;Initial Catalog=Okasama2;Integrated Security=True"
             conn.Open()
             stateConnection = "conectado"
@@ -44,30 +43,26 @@ Public Class Form1
             Dim OrdersString As String = reader.ReadToEnd
             Dim result = JsonConvert.DeserializeObject(Of Object)(OrdersString)
 
-            reader.Close()
+
             Dim Orders = JArray.Parse(OrdersString)
 
             For Each orden As Object In result
 
                 Try
-                    Dim query As String = "SELECT * FROM Ordenes WHERE id = " & orden("id")
-                    Dim resultQuery = New SqlClient.SqlCommand(query, conn).ExecuteScalar()
 
-                    If resultQuery = Nothing Then
-
-                        Dim QueryDeleteData As String = "BEGIN TRAN;DELETE FROM Envio WHERE id_orden = " & orden("id") & ";DELETE FROM Factura WHERE id_orden = " & orden("id") & ";DELETE FROM MetaData WHERE id_orden = " & orden("id") & "DELETE FROM Ordenes WHERE id = " & orden("id") & "; COMMIT"
+                    Dim QueryDeleteData As String = "BEGIN TRAN;DELETE FROM MetaData WHERE id_orden = " & orden("id") & "DELETE FROM Ordenes WHERE id = " & orden("id") & "; COMMIT"
                         command = New SqlClient.SqlCommand(QueryDeleteData, conn)
-                        Dim Resultado = command.ExecuteNonQuery()
+                    command.ExecuteNonQuery()
 
-                        Dim QueryInsert = "INSERT INTO [Okasama2].[dbo].[Ordenes] (id,parent_id,status,currency,version,prices_include_tax,date_created,date_modified,discount_total,discount_tax,shipping_total,shipping_tax,cart_tax,total,total_tax,customer_id,order_key,payment_method,payment_method_title,transaction_id,customer_ip_address,customer_user_agent,created_via,customer_note,date_completed,date_paid,cart_hash,number,date_created_gmt,date_modified_gmt,date_completed_gmt,date_paid_gmt,currency_symbol) VALUES ("
-                        QueryInsert += orden("id") & ","
+                    Dim QueryInsert = "INSERT INTO [Ordenes] (id,parent_id,status,currency,version,prices_include_tax,date_created,date_modified,discount_total,discount_tax,shipping_total,shipping_tax,cart_tax,total,total_tax,customer_id,order_key,payment_method,payment_method_title,transaction_id,customer_ip_address,customer_user_agent,created_via,customer_note,date_completed,date_paid,cart_hash,number,date_created_gmt,date_modified_gmt,date_completed_gmt,date_paid_gmt,currency_symbol, first_name, last_name, company, address_1, country, email, phone, first_name_shipping, last_name_shipping, address_1_shipping, city_shipping, country_shipping) VALUES ("
+                    QueryInsert += orden("id") & ","
                         QueryInsert += orden("parent_id") & ","
                         QueryInsert += "'" & orden("status") & "',"
                         QueryInsert += "'" & orden("currency") & "',"
                         QueryInsert += "'" & orden("version") & "',"
                         QueryInsert += "'" & orden("prices_include_tax") & "',"
-                        QueryInsert += "'" & orden("date_created") & "',"
-                        QueryInsert += "'" & orden("date_modified") & "',"
+                        QueryInsert += "'" & "" & "',"
+                        QueryInsert += "'" & "" & "',"
                         QueryInsert += "'" & orden("discount_total") & "',"
                         QueryInsert += "'" & orden("discount_tax") & "',"
                         QueryInsert += "'" & orden("shipping_total") & "',"
@@ -84,19 +79,53 @@ Public Class Form1
                         QueryInsert += "'" & orden("customer_user_agent") & "',"
                         QueryInsert += "'" & orden("created_via") & "',"
                         QueryInsert += "'" & orden("customer_note") & "',"
-                        QueryInsert += "'" & orden("date_completed") & "',"
-                        QueryInsert += "'" & orden("date_paid") & "',"
-                        QueryInsert += "'" & orden("cart_hash") & "',"
-                        QueryInsert += "'" & orden("number") & "',"
-                        QueryInsert += "'" & orden("date_created_gmt") & "',"
-                        QueryInsert += "'" & orden("date_modified_gmt") & "',"
-                        QueryInsert += "'" & orden("date_completed_gmt") & "',"
-                        QueryInsert += "'" & orden("date_paid_gmt") & "',"
-                        QueryInsert += "'" & orden("currency_symbol") & "')"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & orden("cart_hash") & "',"
+                    QueryInsert += "'" & orden("number") & "',"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & "" & "',"
+                    QueryInsert += "'" & orden("currency_symbol") & "',"
+                        QueryInsert += "'" & orden("billing")("first_name") & "',"
+                        QueryInsert += "'" & orden("billing")("last_name") & "',"
+                        QueryInsert += "'" & orden("billing")("company") & "',"
+                        QueryInsert += "'" & orden("billing")("address_1") & "',"
+                        QueryInsert += "'" & orden("billing")("country") & "',"
+                        QueryInsert += "'" & orden("billing")("email") & "',"
+                        QueryInsert += "'" & orden("billing")("phone") & "',"
+                        QueryInsert += "'" & orden("shipping")("first_name") & "',"
+                        QueryInsert += "'" & orden("shipping")("last_name") & "',"
+                        QueryInsert += "'" & orden("shipping")("address_1") & "',"
+                        QueryInsert += "'" & orden("shipping")("city") & "',"
+                        QueryInsert += "'" & orden("shipping")("country") & "')"
 
-                        command = New SqlClient.SqlCommand(QueryInsert, conn)
-                        Dim resultQueryInsert = command.ExecuteNonQuery()
-                    End If
+                    command = New SqlClient.SqlCommand(QueryInsert, conn)
+                    Dim resultQueryInsert = command.ExecuteNonQuery()
+
+
+
+                    For Each meta As Object In orden("meta_data")
+                        Dim ddd = meta
+                        Dim QueryInsertMeta = "INSERT INTO MetaData (id, id_orden, [key], value) values ("
+                        QueryInsertMeta += meta("id") & ","
+                        QueryInsertMeta += orden("id") & ","
+                        QueryInsertMeta += "'" & meta("key") & "',"
+                        QueryInsertMeta += "'" & meta("value") & "'"
+                        QueryInsertMeta += ")"
+
+                        Try
+                            command = New SqlClient.SqlCommand(QueryInsertMeta, conn)
+                            command.ExecuteNonQuery()
+                        Catch ex As Exception
+
+                        End Try
+
+                    Next
+
+
+
                 Catch ex As Exception
 
                 End Try
@@ -111,14 +140,26 @@ Public Class Form1
 
     Sub PrintData()
         Dim ds As New DataSet
-        Dim query As String = "SELECT 
-        id as ID,
+        Dim query As String = "
+            SELECT	id as ID,
+        first_name as [NOMBRE DEL CLIENTE],
+        last_name as [APELLIDO DEL CLIENTE],
+        address_1 as [DIRECCIÓN DEL CLIENTE],
         total as TOTAL,
         payment_method_title as [METODO DE PAGO],
         status as ESTADO,
         currency as [TIPO DE DIVISA],
-        date_created as [FECHA DE CREACIÓN]
-        FROM Ordenes ORDER BY date_created DESC"
+        email as [CORREO],
+        country as [PAÍS],
+        phone as [TELÉFONO],
+        first_name_shipping as [NOMBRE QUIEN RECIBE],
+        last_name_shipping as [APELLIDO QUIEN RECIBE],
+        address_1_shipping as [DIRECCIÓN QUIEN RECIBE],
+        (SELECT top(1) value FROM MetaData WHERE id_orden = o.id and [key] = '_billing_local' ORDER BY ID DESC) as LOCAL,
+        (SELECT top(1) value FROM MetaData WHERE id_orden = o.id and [key] = '_billing_tipo_compra' ORDER BY ID DESC) as [TIPO DE COMPRA],
+        (SELECT top(1) value FROM MetaData WHERE id_orden = o.id and [key] = '_billing_mesa' ORDER BY ID DESC) as MESA
+        FROM Ordenes as o ORDER BY date_created DESC
+        "
 
         ds.Tables.Add("tabla")
         Dim da = New System.Data.SqlClient.SqlDataAdapter(query, conn)

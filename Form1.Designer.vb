@@ -31,11 +31,12 @@ Partial Class Form1
         '
         'DataGridView1
         '
+        Me.DataGridView1.Anchor = CType((System.Windows.Forms.AnchorStyles.Left Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.DataGridView1.Location = New System.Drawing.Point(39, 44)
         Me.DataGridView1.Name = "DataGridView1"
         Me.DataGridView1.RowTemplate.Height = 25
-        Me.DataGridView1.Size = New System.Drawing.Size(720, 339)
+        Me.DataGridView1.Size = New System.Drawing.Size(720, 500)
         Me.DataGridView1.TabIndex = 0
         '
         'Timer1
